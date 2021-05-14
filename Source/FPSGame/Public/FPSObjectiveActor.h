@@ -29,11 +29,9 @@ protected:
 	UParticleSystem* PickupFX;
 
 	virtual void BeginPlay() override;
-	
-	void PlayEffects() const;
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
+	void PlayEffects() const;
+
+public:
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 };
