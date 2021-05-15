@@ -59,7 +59,7 @@ void ABlackHole::Tick(float DeltaTime)
 	{
 		if(OverlappingComponent && OverlappingComponent->IsSimulatingPhysics())
 		{
-			OverlappingComponent->AddRadialForce(GetActorLocation(), OuterSphere->GetScaledSphereRadius(), GravityStrength, ERadialImpulseFalloff::RIF_Constant, true);
+			OverlappingComponent->AddRadialForce(GetActorLocation(), OuterSphere->GetScaledSphereRadius(), GravityStrength, ERadialImpulseFalloff::RIF_Linear, true);
 		}
 	}
 
