@@ -3,10 +3,9 @@
 
 #include "FPSExtractionZone.h"
 
-
 #include "FPSCharacter.h"
-#include "InputBehavior.h"
 #include "Components/BoxComponent.h"
+#include "Components/DecalComponent.h"
 
 // Sets default values
 AFPSExtractionZone::AFPSExtractionZone()
@@ -22,6 +21,10 @@ AFPSExtractionZone::AFPSExtractionZone()
 	OverlapComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	OverlapComponent->SetBoxExtent(FVector{200.f});
 	OverlapComponent->OnComponentBeginOverlap.AddDynamic(this, &AFPSExtractionZone::HandleOverlap);
+
+	DecalComponent = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComponent"));
+	DecalComponent->SetupAttachment(RootComponent);
+	DecalComponent->DecalSize = FVector{200.f};
 }
 
 void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

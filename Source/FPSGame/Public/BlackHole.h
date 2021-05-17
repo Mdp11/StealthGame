@@ -24,7 +24,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category="Components")
 	USphereComponent* OuterSphere;
-	
+
 	UPROPERTY(EditAnywhere, Category="Components")
 	USphereComponent* MiddleSphere;
 
@@ -39,8 +39,8 @@ protected:
 
 	UFUNCTION()
 	void OnInnerSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	                                 UPrimitiveComponent* OtherComp,
-	                                 int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	                          UPrimitiveComponent* OtherComp,
+	                          int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 public:
 	// Called every frame

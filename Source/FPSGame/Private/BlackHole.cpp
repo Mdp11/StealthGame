@@ -37,8 +37,6 @@ ABlackHole::ABlackHole()
 	InnerSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	InnerSphere->SetCollisionResponseToAllChannels(ECR_Overlap);
 	InnerSphere->OnComponentBeginOverlap.AddDynamic(this, &ABlackHole::OnInnerSphereOverlap);
-	
-	
 }
 
 // Called when the game starts or when spawned
@@ -51,42 +49,48 @@ void ABlackHole::BeginPlay()
 void ABlackHole::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	TArray<UPrimitiveComponent*> OuterOverlappingComponents;
 	OuterSphere->GetOverlappingComponents(OuterOverlappingComponents);
 
-	for(const auto& OverlappingComponent : OuterOverlappingComponents)
+	for (const auto& OverlappingComponent : OuterOverlappingComponents)
 	{
-		if(OverlappingComponent && OverlappingComponent->IsSimulatingPhysics())
+		if (OverlappingComponent && OverlappingComponent->IsSimulatingPhysics())
 		{
-			OverlappingComponent->AddRadialForce(GetActorLocation(), OuterSphere->GetScaledSphereRadius(), GravityStrength, ERadialImpulseFalloff::RIF_Linear, true);
+			OverlappingComponent->AddRadialForce(GetActorLocation(), OuterSphere->GetScaledSphereRadius(),
+			                                     GravityStrength, ERadialImpulseFalloff::RIF_Linear, true);
 		}
 	}
 
 	TArray<UPrimitiveComponent*> MiddleOverlappingComponents;
 	MiddleSphere->GetOverlappingComponents(MiddleOverlappingComponents);
-	
-	for(const auto& OverlappingComponent : MiddleOverlappingComponents)
+
+	for (const auto& OverlappingComponent : MiddleOverlappingComponents)
 	{
-		if(OverlappingComponent && OverlappingComponent->IsSimulatingPhysics())
+		if (OverlappingComponent && OverlappingComponent->IsSimulatingPhysics())
 		{
-			const auto Distance = (OverlappingComponent->GetComponentLocation() - InnerSphere->GetComponentLocation()).Size();
+			const auto Distance = (OverlappingComponent->GetComponentLocation() - InnerSphere->GetComponentLocation()).
+				Size();
 			const auto MiddleSphereScaledRadius = MiddleSphere->GetScaledSphereRadius();
 			const auto InitialScale = OverlappingComponent->GetComponentScale();
-			
-			const auto ScaleX = FMath::FInterpConstantTo(InitialScale.X, Distance/MiddleSphereScaledRadius, DeltaTime, 10.f);
-			const auto ScaleY = FMath::FInterpConstantTo(InitialScale.Y, Distance/MiddleSphereScaledRadius, DeltaTime, 10.f);
-			const auto ScaleZ = FMath::FInterpConstantTo(InitialScale.Z, Distance/MiddleSphereScaledRadius, DeltaTime, 10.f);
-			
+
+			const auto ScaleX = FMath::FInterpConstantTo(InitialScale.X, Distance / MiddleSphereScaledRadius, DeltaTime,
+			                                             10.f);
+			const auto ScaleY = FMath::FInterpConstantTo(InitialScale.Y, Distance / MiddleSphereScaledRadius, DeltaTime,
+			                                             10.f);
+			const auto ScaleZ = FMath::FInterpConstantTo(InitialScale.Z, Distance / MiddleSphereScaledRadius, DeltaTime,
+			                                             10.f);
+
 			OverlappingComponent->SetWorldScale3D(FVector{ScaleX, ScaleY, ScaleZ});
 		}
 	}
-
 }
 
-void ABlackHole::OnInnerSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+void ABlackHole::OnInnerSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                      const FHitResult& SweepResult)
 {
-	if(OtherActor)
+	if (OtherActor)
 	{
 		OtherActor->Destroy();
 	}

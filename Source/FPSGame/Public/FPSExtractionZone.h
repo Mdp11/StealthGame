@@ -8,13 +8,14 @@
 #include "FPSExtractionZone.generated.h"
 
 class UBoxComponent;
+class UDecalComponent;
 
 UCLASS()
 class FPSGAME_API AFPSExtractionZone : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AFPSExtractionZone();
 
@@ -23,7 +24,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UBoxComponent* OverlapComponent;
 
-public:	
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	UDecalComponent* DecalComponent;
+
+public:
 
 	UFUNCTION()
 	void HandleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
