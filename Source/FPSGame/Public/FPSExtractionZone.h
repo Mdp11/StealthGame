@@ -20,14 +20,17 @@ public:
 	AFPSExtractionZone();
 
 protected:
-
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UBoxComponent* OverlapComponent;
 
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UDecalComponent* DecalComponent;
 
-public:
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	USoundBase* ObjectiveMissingSound;
+
+	UPROPERTY(EditAnywhere, Category="Sounds")
+	USoundBase* VictorySound;
 
 	UFUNCTION()
 	void HandleOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

@@ -11,10 +11,15 @@ class AFPSGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(EditDefaultsOnly, Category="Viewpoint")
+	TSubclassOf<AActor> PanoramicViewPointClass;
+
 public:
-
 	AFPSGameMode();
+
+	void CompleteMission(APawn* InstigatorPawn);
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Gameplay")
+	void OnMissionCompleted(APawn* InstigatorPawn);
 };
-
-
-
