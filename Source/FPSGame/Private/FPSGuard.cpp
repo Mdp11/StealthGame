@@ -4,7 +4,6 @@
 #include "FPSGuard.h"
 
 #include "Perception/PawnSensingComponent.h"
-#include "DrawDebugHelpers.h"
 #include "FPSGameMode.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -18,13 +17,15 @@ AFPSGuard::AFPSGuard()
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AFPSGuard::OnPawnSeen);
 	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSGuard::OnNoiseHeard);
+
+	GuardState = EGuardState::Idle;
 }
 
 // Called when the game starts or when spawned
 void AFPSGuard::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	DefaultOrientation = GetActorRotation();
 }
 
@@ -38,8 +39,10 @@ void AFPSGuard::OnPawnSeen(APawn* Pawn)
 {
 	if (Pawn)
 	{
+		SetGuardState(EGuardState::Alerted);
+
 		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
-		if(GameMode)
+		if (GameMode)
 		{
 			GameMode->CompleteMission(Pawn, false);
 		}
@@ -48,15 +51,32 @@ void AFPSGuard::OnPawnSeen(APawn* Pawn)
 
 void AFPSGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volume)
 {
-	FRotator LookAtNoiseRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
-	LookAtNoiseRotation.Pitch = 0.f;
-	LookAtNoiseRotation.Roll = 0.f;
-	SetActorRotation(LookAtNoiseRotation);
-	
-	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSGuard::ResetOrientation, 3.0f);
+	if (GuardState != EGuardState::Alerted)
+	{
+		SetGuardState(EGuardState::Suspicious);
+		FRotator LookAtNoiseRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Location);
+		LookAtNoiseRotation.Pitch = 0.f;
+		LookAtNoiseRotation.Roll = 0.f;
+		SetActorRotation(LookAtNoiseRotation);
+
+		GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSGuard::ResetOrientation, 3.0f);
+	}
 }
 
 void AFPSGuard::ResetOrientation()
 {
-	SetActorRotation(DefaultOrientation);
+	if (GuardState != EGuardState::Alerted)
+	{
+		SetActorRotation(DefaultOrientation);
+		SetGuardState(EGuardState::Idle);
+	}
+}
+
+void AFPSGuard::SetGuardState(EGuardState NewState)
+{
+	if (GuardState != NewState)
+	{
+		GuardState = NewState;
+		OnStateChanged(NewState);
+	}
 }

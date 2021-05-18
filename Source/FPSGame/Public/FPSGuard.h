@@ -9,6 +9,14 @@
 
 class UPawnSensingComponent;
 
+UENUM(BlueprintType)
+enum class EGuardState : uint8
+{
+	Idle,
+	Suspicious,
+	Alerted
+};
+
 UCLASS()
 class FPSGAME_API AFPSGuard : public ACharacter
 {
@@ -22,6 +30,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="Components")
 	UPawnSensingComponent* PawnSensingComponent;
 
+	FRotator DefaultOrientation;
+
+	FTimerHandle TimerHandle_ResetOrientation;
+
+	EGuardState GuardState;
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -29,12 +43,14 @@ protected:
 
 	UFUNCTION()
 	void OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volume);
-	
+
 	void ResetOrientation();
 
-	FRotator DefaultOrientation;
+	void SetGuardState(EGuardState NewState);
 
-	FTimerHandle TimerHandle_ResetOrientation;
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnStateChanged(EGuardState NewState);
+
 
 public:
 	// Called every frame

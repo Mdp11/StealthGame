@@ -29,15 +29,12 @@ AFPSLaunchPad::AFPSLaunchPad()
 void AFPSLaunchPad::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("PROVA"));
-
 }
 
 void AFPSLaunchPad::OnLaunchPadOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                        const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OVERLAPPPP"));
 	FRotator LaunchDirection{GetActorRotation()};
 	LaunchDirection.Pitch += LaunchPitchAngle;
 
