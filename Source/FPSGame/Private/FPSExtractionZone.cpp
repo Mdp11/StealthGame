@@ -45,7 +45,7 @@ void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent,
 		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 		if (GameMode)
 		{
-			GameMode->CompleteMission(PlayerCharacter);
+			GameMode->CompleteMission(PlayerCharacter, true);
 			UGameplayStatics::PlaySoundAtLocation(this, VictorySound, GetActorLocation());
 		}
 	}

@@ -17,14 +17,14 @@ AFPSGameMode::AFPSGameMode()
 	HUDClass = AFPSHUD::StaticClass();
 }
 
-void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
+void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 {
 	if (InstigatorPawn)
 	{
 		InstigatorPawn->DisableInput(nullptr);
 	}
 
-	OnMissionCompleted(InstigatorPawn);
+	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 
 	APlayerController* PlayerController = Cast<APlayerController>(InstigatorPawn->GetController());
 

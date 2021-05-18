@@ -33,6 +33,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
+	UPawnNoiseEmitterComponent* PawnNoiseEmitterComponent;
+
 public:
 	AFPSCharacter();
 
