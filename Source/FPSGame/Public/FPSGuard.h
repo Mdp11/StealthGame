@@ -36,6 +36,17 @@ protected:
 
 	EGuardState GuardState;
 
+	UPROPERTY(EditInstanceOnly, Category="AI")
+	bool bPatrol;
+
+	UPROPERTY(EditInstanceOnly, Category="AI", meta=(EditCondition="bPatrol"))
+	TArray<AActor*> PatrolPoints;
+
+	UPROPERTY()
+	AActor* CurrentPatrolPoint;
+
+	int CurrentPatrolPointIndex;
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -50,6 +61,12 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStateChanged(EGuardState NewState);
+
+	void MoveToNextPatrolPoint();
+
+	void UpdateCurrentPatrolPoint();
+
+	void StopMovement() const;
 
 
 public:

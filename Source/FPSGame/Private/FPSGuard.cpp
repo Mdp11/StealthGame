@@ -5,6 +5,9 @@
 
 #include "Perception/PawnSensingComponent.h"
 #include "FPSGameMode.h"
+#include "NavigationSystem.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -19,20 +22,66 @@ AFPSGuard::AFPSGuard()
 	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSGuard::OnNoiseHeard);
 
 	GuardState = EGuardState::Idle;
+
+	CurrentPatrolPointIndex = 0;
 }
 
 // Called when the game starts or when spawned
 void AFPSGuard::BeginPlay()
 {
 	Super::BeginPlay();
-
 	DefaultOrientation = GetActorRotation();
+
+	if (bPatrol)
+	{
+		MoveToNextPatrolPoint();
+	}
+}
+
+void AFPSGuard::MoveToNextPatrolPoint()
+{
+	UpdateCurrentPatrolPoint();
+	if (CurrentPatrolPoint)
+	{
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), CurrentPatrolPoint);
+	}
+}
+
+void AFPSGuard::UpdateCurrentPatrolPoint()
+{
+	if (CurrentPatrolPoint != nullptr)
+	{
+		if (++CurrentPatrolPointIndex >= PatrolPoints.Num())
+		{
+			CurrentPatrolPointIndex = 0;
+		}
+	}
+	CurrentPatrolPoint = PatrolPoints[CurrentPatrolPointIndex];
+}
+
+void AFPSGuard::StopMovement() const
+{
+	AController* Controller = GetController();
+	if(Controller)
+	{
+		Controller->StopMovement();
+	}
 }
 
 // Called every frame
 void AFPSGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(bPatrol)
+	{
+		const float DistanceFromCurrentPatrolPoint = (GetActorLocation() - CurrentPatrolPoint->GetActorLocation()).Size();
+
+		if(DistanceFromCurrentPatrolPoint <= 100.f)
+		{
+			MoveToNextPatrolPoint();
+		}
+	}
 }
 
 void AFPSGuard::OnPawnSeen(APawn* Pawn)
@@ -45,6 +94,11 @@ void AFPSGuard::OnPawnSeen(APawn* Pawn)
 		if (GameMode)
 		{
 			GameMode->CompleteMission(Pawn, false);
+		}
+
+		if(bPatrol)
+		{
+			StopMovement();
 		}
 	}
 }
@@ -60,6 +114,11 @@ void AFPSGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, fl
 		SetActorRotation(LookAtNoiseRotation);
 
 		GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSGuard::ResetOrientation, 3.0f);
+
+		if(bPatrol)
+		{
+			StopMovement();
+		}
 	}
 }
 
@@ -69,6 +128,8 @@ void AFPSGuard::ResetOrientation()
 	{
 		SetActorRotation(DefaultOrientation);
 		SetGuardState(EGuardState::Idle);
+
+		MoveToNextPatrolPoint();
 	}
 }
 
