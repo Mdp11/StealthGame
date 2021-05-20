@@ -61,10 +61,10 @@ void AFPSGuard::UpdateCurrentPatrolPoint()
 
 void AFPSGuard::StopMovement() const
 {
-	AController* Controller = GetController();
-	if(Controller)
+	AController* PawnController = GetController();
+	if (PawnController)
 	{
-		Controller->StopMovement();
+		PawnController->StopMovement();
 	}
 }
 
@@ -73,11 +73,12 @@ void AFPSGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(bPatrol)
+	if (bPatrol)
 	{
-		const float DistanceFromCurrentPatrolPoint = (GetActorLocation() - CurrentPatrolPoint->GetActorLocation()).Size();
+		const float DistanceFromCurrentPatrolPoint = (GetActorLocation() - CurrentPatrolPoint->GetActorLocation()).
+			Size();
 
-		if(DistanceFromCurrentPatrolPoint <= 100.f)
+		if (DistanceFromCurrentPatrolPoint <= 100.f)
 		{
 			MoveToNextPatrolPoint();
 		}
@@ -96,7 +97,7 @@ void AFPSGuard::OnPawnSeen(APawn* Pawn)
 			GameMode->CompleteMission(Pawn, false);
 		}
 
-		if(bPatrol)
+		if (bPatrol)
 		{
 			StopMovement();
 		}
@@ -115,7 +116,7 @@ void AFPSGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, fl
 
 		GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSGuard::ResetOrientation, 3.0f);
 
-		if(bPatrol)
+		if (bPatrol)
 		{
 			StopMovement();
 		}
@@ -129,7 +130,10 @@ void AFPSGuard::ResetOrientation()
 		SetActorRotation(DefaultOrientation);
 		SetGuardState(EGuardState::Idle);
 
-		MoveToNextPatrolPoint();
+		if (bPatrol)
+		{
+			MoveToNextPatrolPoint();
+		}
 	}
 }
 
