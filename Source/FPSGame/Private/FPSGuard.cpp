@@ -6,6 +6,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "FPSGameMode.h"
 #include "NavigationSystem.h"
+#include "UnrealNetwork.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -137,11 +138,24 @@ void AFPSGuard::ResetOrientation()
 	}
 }
 
-void AFPSGuard::SetGuardState(EGuardState NewState)
+void AFPSGuard::SetGuardState(const EGuardState NewState)
 {
 	if (GuardState != NewState)
 	{
 		GuardState = NewState;
-		OnStateChanged(NewState);
+		OnRep_GuardState();
 	}
+}
+
+void AFPSGuard::OnRep_GuardState()
+{
+	OnStateChanged(GuardState);
+}
+
+
+void AFPSGuard::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSGuard, GuardState);
 }
