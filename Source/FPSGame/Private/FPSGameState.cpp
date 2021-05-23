@@ -4,14 +4,24 @@
 #include "FPSGameState.h"
 
 #include "EngineUtils.h"
+#include "FPSPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 void AFPSGameState::MulticastCompleteMission_Implementation(APawn* InstigatorPawn, bool bMissionSuccess)
 {
-	for(auto Pawn = TActorIterator<APawn>{GetWorld()}; Pawn; ++Pawn)
+	for(auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		if(Pawn && Pawn->IsLocallyControlled())
+		AFPSPlayerController* PC = Cast<AFPSPlayerController>(It->Get());
+		if(PC && PC->IsLocalController())
 		{
-			Pawn->DisableInput(nullptr);
+			UGameplayStatics::PlaySoundAtLocation(InstigatorPawn, VictorySound, InstigatorPawn->GetActorLocation());
+			PC->OnMissionCompleted(InstigatorPawn, bMissionSuccess);
+
+			APawn* PlayerPawn = PC->GetPawn();
+			if(PlayerPawn)
+			{
+				PlayerPawn->DisableInput(nullptr);
+			}
 		}
 	}
 }

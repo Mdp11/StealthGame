@@ -14,6 +14,11 @@ class FPSGAME_API AFPSGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 
+protected:
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* VictorySound;
+	
 public:
 
 	UFUNCTION(NetMulticast, Reliable)

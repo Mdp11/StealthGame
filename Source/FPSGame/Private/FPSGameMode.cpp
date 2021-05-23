@@ -14,6 +14,10 @@ AFPSGameMode::AFPSGameMode()
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/Blueprints/BP_Player"));
 	DefaultPawnClass = PlayerPawnClassFinder.Class;
 
+	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerClassFinder(
+		TEXT("/Game/Blueprints/BP_PlayerController"));
+	PlayerControllerClass = PlayerControllerClassFinder.Class;
+
 	// use our custom HUD class
 	HUDClass = AFPSHUD::StaticClass();
 
@@ -25,17 +29,21 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 {
 	if (InstigatorPawn)
 	{
-
-		APlayerController* PlayerController = Cast<APlayerController>(InstigatorPawn->GetController());
-
-		if (PlayerController)
+		if (PanoramicViewPointClass)
 		{
 			TArray<AActor*> ViewTargets;
 			UGameplayStatics::GetAllActorsOfClass(this, PanoramicViewPointClass, ViewTargets);
 
 			if (ViewTargets.Num() > 0)
 			{
-				PlayerController->SetViewTargetWithBlend(ViewTargets[0], 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
+				for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+				{
+					APlayerController* PC = It->Get();
+					if (PC)
+					{
+						PC->SetViewTargetWithBlend(ViewTargets[0], 0.5f, EViewTargetBlendFunction::VTBlend_Cubic);
+					}
+				}
 			}
 		}
 	}
