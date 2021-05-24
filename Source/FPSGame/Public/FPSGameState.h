@@ -18,6 +18,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	USoundBase* VictorySound;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundBase* LoseSound;
 	
 public:
 

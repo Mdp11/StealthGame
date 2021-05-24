@@ -72,6 +72,8 @@ protected:
 
 	void StopMovement() const;
 
+	bool bPawnSeen;
+
 
 public:
 	// Called every frame

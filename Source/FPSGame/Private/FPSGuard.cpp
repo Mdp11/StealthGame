@@ -25,6 +25,7 @@ AFPSGuard::AFPSGuard()
 	GuardState = EGuardState::Idle;
 
 	CurrentPatrolPointIndex = 0;
+	bPawnSeen = false;
 }
 
 // Called when the game starts or when spawned
@@ -88,19 +89,23 @@ void AFPSGuard::Tick(float DeltaTime)
 
 void AFPSGuard::OnPawnSeen(APawn* Pawn)
 {
-	if (Pawn)
+	if (!bPawnSeen)
 	{
-		SetGuardState(EGuardState::Alerted);
-
-		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
-		if (GameMode)
+		if (Pawn)
 		{
-			GameMode->CompleteMission(Pawn, false);
-		}
+			bPawnSeen = true;
+			SetGuardState(EGuardState::Alerted);
 
-		if (bPatrol)
-		{
-			StopMovement();
+			AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+			if (GameMode)
+			{
+				GameMode->CompleteMission(Pawn, false);
+			}
+
+			if (bPatrol)
+			{
+				StopMovement();
+			}
 		}
 	}
 }
@@ -153,7 +158,7 @@ void AFPSGuard::OnRep_GuardState()
 }
 
 
-void AFPSGuard::GetLifetimeReplicatedProps( TArray< FLifetimeProperty > & OutLifetimeProps ) const
+void AFPSGuard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

@@ -14,13 +14,20 @@ void AFPSGameState::MulticastCompleteMission_Implementation(APawn* InstigatorPaw
 		AFPSPlayerController* PC = Cast<AFPSPlayerController>(It->Get());
 		if(PC && PC->IsLocalController())
 		{
-			UGameplayStatics::PlaySoundAtLocation(InstigatorPawn, VictorySound, InstigatorPawn->GetActorLocation());
 			PC->OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 
 			APawn* PlayerPawn = PC->GetPawn();
 			if(PlayerPawn)
 			{
 				PlayerPawn->DisableInput(nullptr);
+				if (bMissionSuccess)
+				{
+					UGameplayStatics::PlaySoundAtLocation(PlayerPawn, VictorySound, PlayerPawn->GetActorLocation());
+				}
+				else
+				{
+					UGameplayStatics::PlaySoundAtLocation(PlayerPawn, LoseSound, PlayerPawn->GetActorLocation());
+				}
 			}
 		}
 	}
