@@ -3,12 +3,16 @@
 
 #include "FPSGuard.h"
 
+#include "DrawDebugHelpers.h"
+#include "FPSCharacter.h"
 #include "Perception/PawnSensingComponent.h"
 #include "FPSGameMode.h"
 #include "NavigationSystem.h"
 #include "UnrealNetwork.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -25,7 +29,15 @@ AFPSGuard::AFPSGuard()
 	GuardState = EGuardState::Idle;
 
 	CurrentPatrolPointIndex = 0;
-	bPawnSeen = false;
+
+	SeenAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SeenAudioComp"));
+	SeenAudioComponent->SetAutoActivate(false);
+
+	HeardAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("HeardAudioComp"));
+	HeardAudioComponent->SetAutoActivate(false);
+
+	GuardEyes = CreateDefaultSubobject<USceneComponent>(TEXT("Eyes"));
+	GuardEyes->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -85,27 +97,61 @@ void AFPSGuard::Tick(float DeltaTime)
 			MoveToNextPatrolPoint();
 		}
 	}
+
+	if (PawnSeen)
+	{
+		FRotator LookAtPawnRotation = UKismetMathLibrary::FindLookAtRotation(
+			GetActorLocation(), PawnSeen->GetActorLocation());
+		LookAtPawnRotation.Pitch = 0.f;
+		LookAtPawnRotation.Roll = 0.f;
+		SetActorRotation(LookAtPawnRotation);
+		
+		AFPSCharacter* PlayerSeen = Cast<AFPSCharacter>(PawnSeen);
+		if(!PlayerSeen)
+		{
+			return;
+		}
+
+		FHitResult OutHit;
+		FCollisionQueryParams CollisionQueryParams;
+		CollisionQueryParams.AddIgnoredActor(this);
+		bool bTrace = GetWorld()->LineTraceSingleByChannel(OutHit, GuardEyes->GetComponentLocation(), PlayerSeen->PlayerEyes->GetComponentLocation(),
+		                                                   ECC_Pawn,
+		                                                   CollisionQueryParams);
+
+		if (OutHit.GetActor() != PawnSeen)
+		{
+			GetWorldTimerManager().ClearTimer(TimerHandle_CaughtTimer);
+			SetGuardState(EGuardState::Idle);
+			OnNoiseHeard(PawnSeen, PawnSeen->GetActorLocation(), 1.f);
+			PawnSeen = nullptr;
+		}
+	}
 }
 
 void AFPSGuard::OnPawnSeen(APawn* Pawn)
 {
-	if (!bPawnSeen)
+	if (!PawnSeen)
 	{
 		if (Pawn)
 		{
-			bPawnSeen = true;
+			PawnSeen = Pawn;
 			SetGuardState(EGuardState::Alerted);
-
-			AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
-			if (GameMode)
-			{
-				GameMode->CompleteMission(Pawn, false);
-			}
 
 			if (bPatrol)
 			{
 				StopMovement();
 			}
+
+			if (!SeenAudioComponent->IsPlaying() && !HeardAudioComponent->IsPlaying())
+			{
+				SeenAudioComponent->Play();
+			}
+
+			FTimerDelegate TimerDelegate_OnCaught;
+			TimerDelegate_OnCaught.BindUFunction(this, FName("OnCaught"), Pawn);
+
+			GetWorldTimerManager().SetTimer(TimerHandle_CaughtTimer, TimerDelegate_OnCaught, 1.5f, false);
 		}
 	}
 }
@@ -119,6 +165,13 @@ void AFPSGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, fl
 		LookAtNoiseRotation.Pitch = 0.f;
 		LookAtNoiseRotation.Roll = 0.f;
 		SetActorRotation(LookAtNoiseRotation);
+
+		if (!SeenAudioComponent->IsPlaying() && !HeardAudioComponent->IsPlaying() && bPlayHuhSound)
+		{
+			HeardAudioComponent->Play();
+		}
+
+		bPlayHuhSound = false;
 
 		GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSGuard::ResetOrientation, 3.0f);
 
@@ -140,6 +193,8 @@ void AFPSGuard::ResetOrientation()
 		{
 			MoveToNextPatrolPoint();
 		}
+
+		bPlayHuhSound = true;
 	}
 }
 
@@ -163,4 +218,13 @@ void AFPSGuard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AFPSGuard, GuardState);
+}
+
+void AFPSGuard::OnCaught(APawn* PawnCaught)
+{
+	AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->CompleteMission(PawnCaught, false);
+	}
 }

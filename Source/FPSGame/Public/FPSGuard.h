@@ -62,7 +62,10 @@ protected:
 
 	UFUNCTION()
 	void OnRep_GuardState();
-	
+
+	UFUNCTION()
+	void OnCaught(APawn* PawnCaught);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStateChanged(EGuardState NewState);
 
@@ -72,7 +75,21 @@ protected:
 
 	void StopMovement() const;
 
-	bool bPawnSeen;
+	bool bPlayHuhSound{true};
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* GuardEyes;
+	
+	UPROPERTY()
+	APawn* PawnSeen{nullptr};
+
+	UPROPERTY(EditDefaultsOnly)
+	UAudioComponent* SeenAudioComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	UAudioComponent* HeardAudioComponent;
+
+	FTimerHandle TimerHandle_CaughtTimer;
 
 
 public:

@@ -31,6 +31,9 @@ AFPSCharacter::AFPSCharacter()
 	GunMeshComponent->SetupAttachment(Mesh1PComponent, "GripPoint");
 
 	PawnNoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitter"));
+
+	PlayerEyes = CreateDefaultSubobject<USceneComponent>(TEXT("Eyes"));
+	PlayerEyes->SetupAttachment(RootComponent);
 }
 
 

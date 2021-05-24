@@ -54,6 +54,9 @@ public:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category= "Gameplay")
 	bool bIsCarryingObjective{false};
 
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* PlayerEyes;
+
 protected:
 	
 	/** Fires a projectile. */
